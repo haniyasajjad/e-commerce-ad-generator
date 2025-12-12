@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 10s
+
+scrape_configs:
+  - job_name: 'ad-creative-api'
+    metrics_path: /metrics
+    static_configs:
+      - targets: ['ad-creative-api:8000']  # ← Now 8000, using container name
+
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
