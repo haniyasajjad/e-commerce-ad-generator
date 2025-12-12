@@ -1,0 +1,10 @@
+FROM apache/airflow:2.9.1
+
+# Switch to airflow user (default in the base image)
+USER airflow
+
+# Copy requirements and install as airflow user
+COPY airflow-requirements.txt /tmp/airflow-requirements.txt
+RUN pip install --no-cache-dir -r /tmp/airflow-requirements.txt
+
+# No need to switch back — we're already airflow
