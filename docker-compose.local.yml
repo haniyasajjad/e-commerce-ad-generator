@@ -32,19 +32,12 @@ services:
       --default-artifact-root /mlartifacts
       --host 0.0.0.0
       --port 5000
+      --allowed-hosts "*"
     ports:
       - "5000:5000"
     volumes:
       - ./mlflow.db:/mlflow.db
       - ./mlartifacts:/mlartifacts
-    environment:
-      - MLFLOW_DISABLE_HOST_CHECK=true
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-
   # ======================================================
   # AIRFLOW — Lightweight, SQLite backend
   # ======================================================
@@ -71,6 +64,7 @@ services:
       - ./logs:/opt/airflow/logs
       - ./models:/opt/airflow/models
       - ./data:/opt/airflow    # ← This path must match the conn string
+      - ./mlartifacts:/mlartifacts
     
 
   airflow-scheduler:
@@ -91,6 +85,7 @@ services:
       - ./dags:/opt/airflow/dags
       - ./logs:/opt/airflow/logs
       - ./data:/opt/airflow    # ← SAME MOUNT
+      - ./mlartifacts:/mlartifacts
     depends_on:
       - airflow-webserver
     restart: always
