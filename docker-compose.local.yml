@@ -73,6 +73,7 @@ services:
       dockerfile: Dockerfile.airflow
     container_name: airflow-scheduler
     command: scheduler
+    user: "0:0"
     environment:
       - AIRFLOW__CORE__EXECUTOR=SequentialExecutor
       - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=sqlite:////opt/airflow/airflow.db
