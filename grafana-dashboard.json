@@ -1,0 +1,183 @@
+{
+  "dashboard": {
+    "title": "Ad Creative ML Monitoring",
+    "tags": ["mlops", "ad-creative", "monitoring"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "title": "Request Rate (req/s)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+        "targets": [
+          {
+            "expr": "rate(ad_requests_total[1m])",
+            "legendFormat": "{{status}} - {{endpoint}}"
+          }
+        ],
+        "alert": {
+          "name": "High Request Rate",
+          "conditions": [
+            {
+              "evaluator": {"params": [100], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "avg"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "60s",
+          "handler": 1,
+          "message": "Request rate is above 100 req/s",
+          "noDataState": "no_data"
+        }
+      },
+      {
+        "title": "Average Latency (P50, P95, P99)",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(ad_latency_seconds_bucket[5m]))",
+            "legendFormat": "P50"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(ad_latency_seconds_bucket[5m]))",
+            "legendFormat": "P95"
+          },
+          {
+            "expr": "histogram_quantile(0.99, rate(ad_latency_seconds_bucket[5m]))",
+            "legendFormat": "P99"
+          }
+        ],
+        "alert": {
+          "name": "High Latency Alert",
+          "conditions": [
+            {
+              "evaluator": {"params": [5], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "avg"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "60s",
+          "handler": 1,
+          "message": "P95 latency is above 5 seconds",
+          "noDataState": "no_data"
+        }
+      },
+      {
+        "title": "Quality Score Distribution",
+        "type": "graph",
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+        "targets": [
+          {
+            "expr": "histogram_quantile(0.50, rate(ad_quality_score_bucket[5m]))",
+            "legendFormat": "Median Quality"
+          },
+          {
+            "expr": "histogram_quantile(0.95, rate(ad_quality_score_bucket[5m]))",
+            "legendFormat": "P95 Quality"
+          }
+        ],
+        "alert": {
+          "name": "Low Quality Alert",
+          "conditions": [
+            {
+              "evaluator": {"params": [0.5], "type": "lt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "avg"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "60s",
+          "handler": 1,
+          "message": "Median quality score dropped below 0.5",
+          "noDataState": "no_data"
+        }
+      },
+      {
+        "title": "Success vs Error Rate",
+        "type": "piechart",
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
+        "targets": [
+          {
+            "expr": "sum(rate(ad_requests_total{status=\"success\"}[5m]))",
+            "legendFormat": "Success"
+          },
+          {
+            "expr": "sum(rate(ad_requests_total{status=\"error\"}[5m]))",
+            "legendFormat": "Error"
+          }
+        ]
+      },
+      {
+        "title": "Total Throughput",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 0, "y": 16},
+        "targets": [
+          {
+            "expr": "ad_throughput_total",
+            "legendFormat": "Total Ads Generated"
+          }
+        ]
+      },
+      {
+        "title": "Active Requests",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 6, "y": 16},
+        "targets": [
+          {
+            "expr": "ad_active_requests",
+            "legendFormat": "Active"
+          }
+        ]
+      },
+      {
+        "title": "Model Load Time",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 12, "y": 16},
+        "targets": [
+          {
+            "expr": "model_load_time_seconds",
+            "legendFormat": "Load Time (s)"
+          }
+        ]
+      },
+      {
+        "title": "Error Count by Type",
+        "type": "stat",
+        "gridPos": {"h": 4, "w": 6, "x": 18, "y": 16},
+        "targets": [
+          {
+            "expr": "sum by (error_type) (ad_errors_total)",
+            "legendFormat": "{{error_type}}"
+          }
+        ],
+        "alert": {
+          "name": "High Error Rate",
+          "conditions": [
+            {
+              "evaluator": {"params": [10], "type": "gt"},
+              "operator": {"type": "and"},
+              "query": {"params": ["A", "5m", "now"]},
+              "reducer": {"params": [], "type": "sum"},
+              "type": "query"
+            }
+          ],
+          "executionErrorState": "alerting",
+          "frequency": "60s",
+          "handler": 1,
+          "message": "Error count exceeded 10 in last 5 minutes",
+          "noDataState": "no_data"
+        }
+      }
+    ],
+    "refresh": "10s",
+    "time": {"from": "now-1h", "to": "now"}
+  }
+}
