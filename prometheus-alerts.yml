@@ -1,0 +1,137 @@
+groups:
+  - name: ad_creative_alerts
+    interval: 30s
+    rules:
+      # ============================================
+      # LATENCY ALERTS
+      # ============================================
+      - alert: HighAPILatency
+        expr: histogram_quantile(0.95, rate(ad_latency_seconds_bucket[5m])) > 5
+        for: 2m
+        labels:
+          severity: warning
+          service: ad-creative-api
+        annotations:
+          summary: "High API latency detected"
+          description: "P95 latency is {{ $value }}s (threshold: 5s). Service may be experiencing performance degradation."
+      
+      - alert: CriticalAPILatency
+        expr: histogram_quantile(0.95, rate(ad_latency_seconds_bucket[5m])) > 10
+        for: 1m
+        labels:
+          severity: critical
+          service: ad-creative-api
+        annotations:
+          summary: "Critical API latency detected"
+          description: "P95 latency is {{ $value }}s (threshold: 10s). Immediate action required."
+      
+      # ============================================
+      # QUALITY ALERTS
+      # ============================================
+      - alert: LowQualityScore
+        expr: histogram_quantile(0.50, rate(ad_quality_score_bucket[5m])) < 0.5
+        for: 5m
+        labels:
+          severity: warning
+          service: ad-creative-api
+        annotations:
+          summary: "Low quality score detected"
+          description: "Median quality score is {{ $value }} (threshold: 0.5). Model may need retraining or prompt adjustment."
+      
+      - alert: CriticalQualityDegradation
+        expr: histogram_quantile(0.50, rate(ad_quality_score_bucket[5m])) < 0.3
+        for: 3m
+        labels:
+          severity: critical
+          service: ad-creative-api
+        annotations:
+          summary: "Critical quality degradation"
+          description: "Median quality score dropped to {{ $value }}. Model performance severely degraded."
+      
+      # ============================================
+      # ERROR RATE ALERTS
+      # ============================================
+      - alert: HighErrorRate
+        expr: |
+          rate(ad_requests_total{status="error"}[5m]) 
+          / 
+          rate(ad_requests_total[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: warning
+          service: ad-creative-api
+        annotations:
+          summary: "High error rate detected"
+          description: "Error rate is {{ $value | humanizePercentage }}. More than 10% of requests are failing."
+      
+      - alert: CriticalErrorRate
+        expr: |
+          rate(ad_requests_total{status="error"}[5m]) 
+          / 
+          rate(ad_requests_total[5m]) > 0.25
+        for: 1m
+        labels:
+          severity: critical
+          service: ad-creative-api
+        annotations:
+          summary: "Critical error rate"
+          description: "Error rate is {{ $value | humanizePercentage }}. Service is experiencing critical failures."
+      
+      # ============================================
+      # AVAILABILITY ALERTS
+      # ============================================
+      - alert: NoTrafficReceived
+        expr: rate(ad_requests_total[10m]) < 0.01
+        for: 10m
+        labels:
+          severity: warning
+          service: ad-creative-api
+        annotations:
+          summary: "No traffic received"
+          description: "No requests received in the last 10 minutes. Service may be down or unreachable."
+      
+      - alert: ServiceDown
+        expr: up{job="ad-creative-api"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: ad-creative-api
+        annotations:
+          summary: "Service is down"
+          description: "Ad Creative API is not responding to Prometheus scrapes."
+      
+      # ============================================
+      # THROUGHPUT ALERTS
+      # ============================================
+      - alert: UnusuallyHighTraffic
+        expr: rate(ad_requests_total[5m]) > 100
+        for: 5m
+        labels:
+          severity: warning
+          service: ad-creative-api
+        annotations:
+          summary: "Unusually high traffic"
+          description: "Request rate is {{ $value }} req/s. Consider scaling up resources."
+      
+      # ============================================
+      # MODEL HEALTH ALERTS
+      # ============================================
+      - alert: ModelLoadTimeTooHigh
+        expr: model_load_time_seconds > 60
+        for: 1m
+        labels:
+          severity: warning
+          service: ad-creative-api
+        annotations:
+          summary: "Model load time too high"
+          description: "Model took {{ $value }}s to load (threshold: 60s). Cold start performance issue."
+      
+      - alert: TooManyActiveRequests
+        expr: ad_active_requests > 50
+        for: 3m
+        labels:
+          severity: warning
+          service: ad-creative-api
+        annotations:
+          summary: "Too many concurrent requests"
+          description: "{{ $value }} active requests (threshold: 50). System may be overloaded."
