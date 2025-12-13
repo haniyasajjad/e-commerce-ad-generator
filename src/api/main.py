@@ -19,6 +19,7 @@ from src.metrics.custom_exporter import (
     initialize_metrics
 )
 from src.monitoring.drift_detection import drift_detector
+from src.model.multimodal_generator import multimodal_generator
 
 load_dotenv()
 
@@ -138,6 +139,53 @@ async def health_check():
         "model_loaded": True,
         "service": "ad-creative-api"
     }
+
+@app.post("/generate-multimodal")
+async def generate_multimodal_ad(input: ProductInput):
+    """Generate ad with both text and visual layout (BONUS FEATURE)"""
+    
+    with RequestTracker(endpoint="/generate-multimodal") as tracker:
+        try:
+            # Generate text first
+            prompt = f"""<bos><start_of_turn>user
+Write a catchy, engaging Instagram/Facebook ad (max 80 words).
+
+Product: {input.title}
+Description: {input.description}
+
+Make it compelling with emojis and call-to-action!
+<end_of_turn>
+<start_of_turn>model
+"""
+            output = llm(prompt, max_tokens=120, temperature=0.8, top_p=0.9)
+            ad_text = output["choices"][0]["text"].strip()
+            
+            # Generate visual layout
+            layout = multimodal_generator.generate_ad(
+                title=input.title,
+                body_text=ad_text,
+                cta="Shop Now 🛒",
+                color_scheme="vibrant"
+            )
+            
+            # Calculate metrics
+            quality = estimate_quality(ad_text)
+            response_size = len(ad_text.encode('utf-8'))
+            
+            # Track metrics
+            track_quality(quality)
+            track_response_size(response_size)
+            drift_detector.add_prediction(quality, ad_text)
+            
+            return {
+                "ad_text": ad_text,
+                "quality_score": round(quality, 3),
+                "layout": layout,
+                "multimodal": True
+            }
+            
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/drift-report")
 async def drift_report():
