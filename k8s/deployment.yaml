@@ -1,3 +1,10 @@
+# Base production deployment
+# Includes:
+# - Deployment
+# - Service (LoadBalancer)
+# - ConfigMap
+# - HorizontalPodAutoscaler
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:

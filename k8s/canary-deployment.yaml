@@ -1,3 +1,8 @@
+# Canary deployment (bonus)
+# Demonstrates traffic-splitting via replica ratio
+# Stable: 90%, Canary: 10%
+
+
 # Stable deployment (90% traffic)
 apiVersion: apps/v1
 kind: Deployment
