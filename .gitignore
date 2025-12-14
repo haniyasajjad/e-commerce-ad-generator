@@ -83,6 +83,17 @@ Thumbs.db
 .DS_Store
 ehthumbs.db
 
+logs/
+
+mlartifacts/
+
+output_ad_image.png
+
+mlflow.db
+requirements_full.txt
+
+airflow.db/
+
 # Dependencies
 node_modules/
 
