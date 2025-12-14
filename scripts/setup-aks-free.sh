@@ -6,7 +6,7 @@ set -e
 
 # Configuration
 RESOURCE_GROUP="ad-creative-rg"
-LOCATION="eastus"  # Change to your nearest region
+LOCATION="centralindia"  # Change to your nearest region
 AKS_NAME="ad-creative-aks"
 NODE_COUNT=1  # Start with 1 node (FREE tier)
 NODE_SIZE="Standard_B2s"  # Cheapest VM size (2 vCPU, 4GB RAM)
