@@ -2,4 +2,8 @@ fastapi
 uvicorn[standard] 
 prometheus-client 
 pydantic 
+mlflow
 llama-cpp-python==0.3.16
+azure-storage-blob
+pandas
+python-dotenv
