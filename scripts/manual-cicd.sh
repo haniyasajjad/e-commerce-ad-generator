@@ -35,7 +35,7 @@ echo "→ Checking code formatting with black..."
 black --check src/ 2>/dev/null || echo "  Format check complete"
 
 echo "→ Validating Kubernetes manifests..."
-python3 -c "import yaml; list(yaml.safe_load_all(open('k8s/deployment.yaml'))); print('YAML is valid!')"
+python3 -c "import yaml; yaml.safe_load(open('k8s/deployment.yaml')); print('  ✓ deployment.yaml valid')"
 
 echo "→ Testing API imports..."
 python -c "import uvicorn; print('✅ Uvicorn OK')"
